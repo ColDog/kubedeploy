@@ -1,0 +1,6 @@
+minio:
+  accessKey: kubedeploy-key
+  secretKey: kubedeploy-secret
+  service:
+    type: ClusterIP
+    clusterIP: null

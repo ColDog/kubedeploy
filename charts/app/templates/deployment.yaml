@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "app.fullname" . }}
+  labels:
+    app: {{ template "app.name" . }}
+    chart: {{ template "app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "app.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "app.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: shim
+          image: coldog/kubedeploy-shim
+          env:
+            - name: NAME
+              value: {{ .Values.name }}
+            - name: VERSION
+              value: {{ .Values.version }}
+            - name: MINIO_KEY
+              value: {{ .Values.store.key }}
+            - name: MINIO_SECRET
+              value: {{ .Values.store.secret }}
+            - name: MINIO_HOST
+              value: "{{ .Values.store.service }}.{{ .Values.store.namespace }}.svc.cluster.local"
+          volumeMounts:
+          - name: app
+            mountPath: /app
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.runtime }}
+          command: {{ toJson .Values.command }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+          - name: app
+            mountPath: /app
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      - name: app
+        emptyDir: {}
