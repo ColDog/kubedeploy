@@ -210,6 +210,7 @@ func deleteCmd(c *cli.Context) error {
 
 func main() {
 	app := cli.NewApp()
+	app.Version = version
 	app.Name = "kubedeploy"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

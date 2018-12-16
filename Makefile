@@ -30,3 +30,7 @@ release: build
 	make -C shim release
 	ghr $(VERSION) dist
 .PHONY: release
+
+bump:
+	echo -n $(v) > version
+.PHONY: bump
