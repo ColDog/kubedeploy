@@ -1,4 +1,4 @@
 apiVersion: v1
-description: A Helm chart for Kubernetes
+description: Application base helm chart for kubedeploy.
 name: app
-version: 0.1.1
+version: VERSION

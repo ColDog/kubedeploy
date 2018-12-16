@@ -11,6 +11,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+var version = "UNRELEASED"
+
 const (
 	appFile = "app.yaml"
 	bucket  = "builds"
@@ -213,7 +215,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "base-chart",
 			Usage: "base chart which is extended with unique app definitions",
-			Value: "https://github.com/ColDog/navigator/releases/download/v0.0.3/service-v0.0.3.tgz",
+			Value: "https://github.com/ColDog/kubedeploy/releases/download/" + version + "/app-" + version + ".tgz",
 		},
 		cli.StringFlag{
 			Name:  "store-namespace",
