@@ -10,7 +10,6 @@ define gobuild
 		-o dist/kubedeploy-$(VERSION)-$(1)-$(2) .
 endef
 
-
 build: clean
 	mkdir dist
 	helm package --version $(VERSION) ./charts/app -d dist
@@ -34,3 +33,7 @@ release: build
 bump:
 	echo -n $(v) > version
 .PHONY: bump
+
+install:
+	go build -o bin/kubedeploy .
+.PHONY: install

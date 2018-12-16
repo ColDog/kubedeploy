@@ -30,3 +30,17 @@ Create chart name and version as used by the chart label.
 {{- define "app.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+
+{{/*
+Returns the command used by the container had defaults for every runtime.
+*/}}
+{{- define "app.command" -}}
+{{- if .Values.command -}}
+{{- toJson .Values.command -}}
+{{- else -}}
+{{- if eq .Values.runtime "node" -}}
+['node', '/app/index.js']
+{{- end -}}
+{{- end -}}
+{{- end -}}

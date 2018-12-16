@@ -152,6 +152,20 @@ func release(chartURI string, a *App, cfg storeConfig) error {
 	)
 }
 
+func template(chartURI string, a *App, cfg storeConfig) error {
+	return sh(
+		"helm", "template",
+		"--set", "version="+a.Version,
+		"--set", "store.key="+cfg.accessKey,
+		"--set", "store.secret="+cfg.accessSecret,
+		"--set", "store.service="+cfg.service,
+		"--set", "store.namespace="+cfg.namespace,
+		"-f", appFile, "--namespace", a.Namespace,
+		"--name", a.Name,
+		chartURI,
+	)
+}
+
 func remove(a *App) error {
 	return sh(
 		"helm", "delete", "--purge", a.Name,
@@ -166,6 +180,7 @@ func deployCmd(c *cli.Context) error {
 		accessKey:    c.GlobalString("store-access-key"),
 		accessSecret: c.GlobalString("store-secret-key"),
 	}
+	dryRun := c.Bool("dry-run")
 
 	tmp, err := ioutil.TempDir("", "kube-")
 	if err != nil {
@@ -176,6 +191,7 @@ func deployCmd(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	a.Version = c.String("version")
 
 	log("Packaging code", tmp)
 	err = buildCode(tmp, a, cfg)
@@ -190,10 +206,17 @@ func deployCmd(c *cli.Context) error {
 		return err
 	}
 
-	log("Releasing chart", chartURI)
-	err = release(chartURI, a, cfg)
-	if err != nil {
-		return err
+	if dryRun {
+		err = template(chartURI, a, cfg)
+		if err != nil {
+			return err
+		}
+	} else {
+		log("Releasing chart", chartURI)
+		err = release(chartURI, a, cfg)
+		if err != nil {
+			return err
+		}
 	}
 
 	log("deploy complete")
@@ -241,8 +264,19 @@ func main() {
 	}
 	app.Commands = []cli.Command{
 		cli.Command{
-			Name:   "deploy",
-			Usage:  "deploy a project in the current kubernetes cluster",
+			Name:  "deploy",
+			Usage: "deploy a project in the current kubernetes cluster",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "version",
+					Usage: "set the application version",
+					Value: "v0",
+				},
+				cli.BoolFlag{
+					Name:  "dry-run",
+					Usage: "does not deploy to the cluster",
+				},
+			},
 			Action: deployCmd,
 		},
 		cli.Command{

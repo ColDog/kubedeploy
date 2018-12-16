@@ -8,7 +8,13 @@ import (
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
+	"github.com/phayes/freeport"
 )
+
+func getPort() (string, error) {
+	port, err := freeport.GetFreePort()
+	return fmt.Sprint(port), err
+}
 
 func copy(src, dst string) error {
 	srcData, err := ioutil.ReadFile(src)
@@ -30,14 +36,17 @@ func sh(cmd string, args ...string) error {
 }
 
 func portForward(ns, svc, port string, fn func(port string) error) error {
-	local := "9000"
+	local, err := getPort()
+	if err != nil {
+		return err
+	}
 	cmd := exec.Command("kubectl", "-n", ns, "port-forward", "svc/"+svc, local+":"+port)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	err := fn("9000")
+	err = fn(local)
 	cmd.Process.Kill()
 	cmd.Wait()
 	return err

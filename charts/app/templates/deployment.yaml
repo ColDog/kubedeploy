@@ -39,7 +39,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.runtime }}
-          command: {{ toJson .Values.command }}
+          command: {{ template "app.command" . }}
           ports:
             - name: http
               containerPort: 3000
