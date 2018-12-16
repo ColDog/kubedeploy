@@ -1,0 +1,7 @@
+name: example
+namespace: example
+source: index.js
+runtime: node
+version: v0
+build:
+- echo hello
